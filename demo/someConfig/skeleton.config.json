@@ -1,0 +1,12 @@
+{
+  "pageName": "",
+  "outputFile": "skeleton-output",
+  "pageUrl": "",
+  "openRepeatList": true,
+  "device": "iPhone X",
+  "minGrayBlockWidth": 20,
+  "minGrayPseudoWidth": 5,
+  "debug": false,
+  "debugTime": 5000,
+  "cookies": []
+}

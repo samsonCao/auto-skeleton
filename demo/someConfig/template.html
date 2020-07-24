@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui,viewport-fit=cover">
+    <meta name="format-detection" content="telephone=yes, email=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <title></title>
+    <meta name="description" content="骨架屏配置" />
+    <link rel="shortcut icon" href="" />
+    <link rel="dns-prefetch" href="" />
+    <script>
+    (function (doc, win) {
+      var docEl = doc.documentElement,
+        resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+        recalc = function() {
+          var clientWidth = docEl.clientWidth;
+          if (!clientWidth) {
+            return;
+          }
+          docEl.style.fontSize = Math.min(640, Math.max(docEl.clientWidth, 320)) / 320 * 14 + 'px';
+        };
+
+      if (!doc.addEventListener) return;
+      win.addEventListener(resizeEvt, recalc, false);
+      doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+    </script>
+  </head>
+  <body>
+    <div id="app"><%= html %></div>
+    <script type="text/javascript"><%= script %></script>
+  </body>
+</html>
