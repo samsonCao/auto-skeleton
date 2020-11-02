@@ -1,6 +1,6 @@
 {
   "name": "auto-skeleton",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "骨架图生成器",
   "author": "",
   "main": "src/index.js",
