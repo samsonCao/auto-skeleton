@@ -3,6 +3,6 @@ export default {
   output: {
     file: 'src/script/dist/index.js',
     format: 'iife',
-    name: 'AwesomeSkeleton',
+    name: 'AutoSkeleton',
   },
 };

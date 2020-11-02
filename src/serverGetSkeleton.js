@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-
 const {
   EOL,
 } = require('os');
@@ -12,11 +11,13 @@ const { chalk } = _;
 const getSkeleton = require('./index');
 const pkg = require('../package.json');
 
-const genFinal = async function(options) {
+const clientGetSkeleton = async function(options) {
+  // 检查可用的更新并返回一个实例
   updateNotifier({
     pkg,
     updateCheckInterval: 5000, // 5s
   }).notify();
+
   try {
     await getSkeleton(options);
 
@@ -25,6 +26,6 @@ const genFinal = async function(options) {
   } catch (error) {
     console.log(chalk.red(`${EOL}auto-skeleton start unsuccessfully: ${error}${EOL}`));
   }
-}
+};
 
-module.exports = genFinal;
+module.exports = serverGetSkeleton;

@@ -1,5 +1,5 @@
 {
-  "extends": "eslint-config-egg",
+  "extends": ["eslint-config-egg", "react-important-stuff"],
   "parserOptions": {
     "sourceType": "module",
     "ecmaFeatures": {

@@ -42,7 +42,7 @@ if (program.config) {
     const resultDir = path.join(process.cwd(), 'skeleton-output');
     console.log('result files save in: ', chalk.cyan(resultDir));
   } catch (error) {
-    console.log(chalk.red(`${EOL}awesome-skeleton start unsuccessfully: ${error}${EOL}`));
+    console.log(chalk.red(`${EOL}auto-skeleton start unsuccessfully: ${error}${EOL}`));
     return;
   }
 })();

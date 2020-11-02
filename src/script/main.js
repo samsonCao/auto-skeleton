@@ -11,7 +11,7 @@ import {
 
 import * as handler from './handler/index';
 
-window.AwesomeSkeleton = {
+window.AutoSkeleton = {
   // Entry function
   async genSkeleton(options) {
     this.options = options;

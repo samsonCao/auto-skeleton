@@ -516,7 +516,7 @@
     }
   }
 
-  window.AwesomeSkeleton = {
+  window.AutoSkeleton = {
     // Entry function
     async genSkeleton(options) {
       this.options = options;
