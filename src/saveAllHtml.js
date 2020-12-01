@@ -12,9 +12,11 @@ const saveAllHtml = async (page, options) => {
   const content = await page.content();
 
   // 把内容写入硬盘
-  fs.writeFileSync(skeletonHTMLPath, content, 'utf8', function(err) {
-    if (err) return console.error(err);
-  });
+  if (options.writeFile) {
+    fs.writeFileSync(skeletonHTMLPath, content, 'utf8', function(err) {
+      if (err) return console.error(err);
+    });
+  }
 };
 
 module.exports = saveAllHtml;

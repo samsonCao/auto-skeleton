@@ -8,10 +8,10 @@ const _ = require('xutil');
 const updateNotifier = require('update-notifier');
 
 const { chalk } = _;
-const getSkeleton = require('./index');
+const getSkeleton = require('./getSkeleton');
 const pkg = require('../package.json');
 
-const clientGetSkeleton = async function(options) {
+const serverGetSkeleton = async function(options) {
   // 检查可用的更新并返回一个实例
   updateNotifier({
     pkg,

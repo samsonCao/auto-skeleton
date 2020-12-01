@@ -18,6 +18,7 @@ skeleton.config.json:
   "minGrayPseudoWidth": 10,
   "debug": true,
   "debugTime": 3000,
+  "writeFile": true,
   "cookies": [
     {
       "domain": ".baidu.com",
@@ -102,6 +103,7 @@ $ npm run skeleton
 | device | 否 | 空为PC | 参考 puppeteer/DeviceDescriptors.js，可以设置为 'iPhone 6 Plus' |
 | debug | 否 | false | 是否开启调试开关 |
 | debugTime | 否 | 0 | 调试模式下，页面停留在骨架图的时间 |
+| writeFile | 是 | false | 是否写入文件(在当前引用骨架屏插件的文件生成一个文件夹，自动存放骨架屏数据)
 | minGrayBlockWidth | 否 | 0 | 最小处理灰色块的宽度 |
 | minGrayPseudoWidth | 否 | 0 | 最小处理伪类宽 |
 

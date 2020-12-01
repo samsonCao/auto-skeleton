@@ -43,7 +43,7 @@ const getSkeleton = async function(options) {
 
   // 开始生成骨架屏
   await page.evaluate(options => {
-    window.AwesomeSkeleton.genSkeleton(options);
+    window.AutoSkeleton.genSkeleton(options);
   }, options);
 
   // 截图

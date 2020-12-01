@@ -70,11 +70,11 @@ const insertSkeleton = (skeletonImageBase64, options) => {
       };
 
       // destroy after the onload event by default
-      window.addEventListener('load', function(){
-        setTimeout(function(){
-          window.SKELETON && SKELETON.destroy()
-        }, 0);
-      });
+      // window.addEventListener('load', function(){
+      //   setTimeout(function(){
+      //     window.SKELETON && SKELETON.destroy()
+      //   }, 0);
+      // });
     </script>`;
 
   // 压缩css js 去掉注释
@@ -84,15 +84,16 @@ const insertSkeleton = (skeletonImageBase64, options) => {
     removeComments: true,
   });
 
-  // 把内容写入硬盘
-  fs.writeFileSync(skeletonHTMLPath, minifyContent, 'utf8', err => {
-    if (err) return console.error(err);
-  });
+  if (options.writeFile) {
+    // 把内容写入硬盘 写入的是压缩的css js内容
+    fs.writeFileSync(skeletonHTMLPath, minifyContent, 'utf8', err => {
+      if (err) return console.error(err);
+    });
 
-  fs.writeFileSync(`${autoHTMLPath}/${fileName}.html`, minifyContent, 'utf8', err => {
-    if (err) return console.error(err);
-  });
-
+    fs.writeFileSync(`${autoHTMLPath}/${fileName}.html`, minifyContent, 'utf8', err => {
+      if (err) return console.error(err);
+    });
+  }
 
   return {
     minHtml: minifyContent,

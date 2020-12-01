@@ -24,11 +24,13 @@ const saveScreenShot = async (page, options) => {
 
   const skeletonBase64Path = options.outputPath ? path.join(options.outputPath, `${fileName}.txt`) : null;
   if (skeletonBase64Path) {
-    // 把base64写入文件
-    fs.writeFileSync(skeletonBase64Path, skeletonImageBase64, err => {
-      if (err) throw err;
-      console.log(`The base64-${options.pageName}.txt file has been saved in path '${options.outputPath}' !`);
-    });
+    if (options.writeFile) {
+      // 把base64写入文件
+      fs.writeFileSync(skeletonBase64Path, skeletonImageBase64, err => {
+        if (err) throw err;
+        console.log(`The base64-${options.pageName}.txt file has been saved in path '${options.outputPath}' !`);
+      });
+    }
   }
   return skeletonImageBase64;
 };
@@ -39,10 +41,14 @@ const saveSkeletonHtml = async (page, options) => {
 
   const content = await page.content();
 
-  // 把内容写入硬盘
-  fs.writeFileSync(skeletonHTMLPath, content, 'utf8', function(err) {
-    if (err) return console.error(err);
-  });
+  if (options.writeFile) {
+    // 把内容写入硬盘
+    fs.writeFileSync(skeletonHTMLPath, content, 'utf8', function (err) {
+      if (err) return console.error(err);
+    });
+  }
+  return content;
+
 };
 
 module.exports = {
