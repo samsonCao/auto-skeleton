@@ -43,7 +43,7 @@ const saveSkeletonHtml = async (page, options) => {
 
   if (options.writeFile) {
     // 把内容写入硬盘
-    fs.writeFileSync(skeletonHTMLPath, content, 'utf8', function (err) {
+    fs.writeFileSync(skeletonHTMLPath, content, 'utf8', function(err) {
       if (err) return console.error(err);
     });
   }
