@@ -7,7 +7,7 @@ getSkeleton({
   minGrayBlockWidth: 20,
   minGrayPseudoWidth: 5,
   debug: true,
-  debugTime: 1,
+  debugTime: 1000,
   cookies: [{
     "domain": ".baidu.com",
     "expirationDate": 1568267131.555328,
@@ -23,5 +23,5 @@ getSkeleton({
     "id": 2
   }],
 }).then(result => {
-  console.log(result.html)
+  // console.log(result.html)
 })

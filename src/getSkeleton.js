@@ -1,6 +1,5 @@
 
 const fs = require('fs');
-const path = require('path');
 
 const { saveScreenShot } = require('./saveFile');
 const openPage = require('./openPage');
@@ -20,22 +19,35 @@ const saveAllHtml = require('./saveAllHtml');
  * @param {Boolean} options.debug 是否开启调试开关
  * @param {Number} options.debugTime 调试模式下，页面停留在骨架图的时间
  */
+
+// 定义默认值
+const initOptions = {
+  pageName: 'output',
+  writeFile: false,
+  outputPath: 'skeleton-output',
+  openRepeatList: false,
+  device: 'iPhone X',
+  debug: false,
+  debugTime: 0,
+  minGrayBlockWidth: 0,
+  minGrayPseudoWidth: 0,
+}
 const getSkeleton = async function(options) {
+  options = {
+    ...initOptions,
+    ...options,
+  }
   // 检查页面地址是否为空
   if (!options.pageUrl) {
     console.warn('页面地址不能为空！');
     return false;
   }
 
-  // Set default parameters
-  options.pageName = options.pageName ? options.pageName : 'output';
-  options.outputPath = options.outputPath
-    ? options.outputPath
-    : path.join('skeleton-output');
-
-  // 如果没有输出文件的路径，需要自动创建一个
-  if (!fs.existsSync(options.outputPath)) {
-    fs.mkdirSync(options.outputPath);
+  if (options.writeFile) {
+    // 如果没有输出文件的路径，需要自动创建一个
+    if (!fs.existsSync(options.outputPath)) {
+      fs.mkdirSync(options.outputPath);
+    }
   }
 
   // 打开页面

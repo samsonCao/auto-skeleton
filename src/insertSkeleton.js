@@ -5,12 +5,10 @@ const { minify } = require('html-minifier');
 // 把骨架屏插入模板
 const insertSkeleton = (skeletonImageBase64, options) => {
   // 把内容写入硬盘
-  const autoHTMLPath = path.join(process.cwd(), options.outputFile || 'skeletonTemplate');
+  const autoHTMLPath = path.join(process.cwd(), options.outputPath);
   const { pageUrl } = options;
   const fileName = pageUrl.slice(0, pageUrl.indexOf('?')).split('/').slice(-3)
     .join('.');
-
-  const skeletonHTMLPath = path.join(options.outputPath, `${fileName}.html`);
 
   if (!skeletonImageBase64) {
     console.warn('还没生成骨架屏');
@@ -86,14 +84,12 @@ const insertSkeleton = (skeletonImageBase64, options) => {
 
   if (options.writeFile) {
     // 把内容写入硬盘 写入的是压缩的css js内容
-    fs.writeFileSync(skeletonHTMLPath, minifyContent, 'utf8', err => {
-      if (err) return console.error(err);
-    });
-
     fs.writeFileSync(`${autoHTMLPath}/${fileName}.html`, minifyContent, 'utf8', err => {
       if (err) return console.error(err);
     });
   }
+
+  console.log('minifyContent')
 
   return {
     minHtml: minifyContent,

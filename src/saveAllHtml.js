@@ -17,6 +17,7 @@ const saveAllHtml = async (page, options) => {
       if (err) return console.error(err);
     });
   }
+  return content;
 };
 
 module.exports = saveAllHtml;

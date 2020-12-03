@@ -98,12 +98,12 @@ $ npm run skeleton
 | pageUrl | 是 | - | 页面地址（此地址必须可访问） |
 | pageName | 否 | output | 页面名称（仅限英文） |
 | cookies | 否 |  | 页面 Cookies，用来解决登录态问题 |
+| writeFile | 否 | false | 是否写入文件(在当前引用骨架屏插件的文件生成一个文件夹，自动存放骨架屏数据)
 | outputPath | 否 | skeleton-output | 骨架图文件输出文件夹路径，默认到项目 skeleton-output 中 |
 | openRepeatList | 否 | true | 默认会将每个列表的第一项进行复制 |
-| device | 否 | 空为PC | 参考 puppeteer/DeviceDescriptors.js，可以设置为 'iPhone 6 Plus' |
+| device | 否 | iPhone X | 参考 puppeteer/DeviceDescriptors.js，可以设置为 'iPhone 6 Plus' |
 | debug | 否 | false | 是否开启调试开关 |
 | debugTime | 否 | 0 | 调试模式下，页面停留在骨架图的时间 |
-| writeFile | 是 | false | 是否写入文件(在当前引用骨架屏插件的文件生成一个文件夹，自动存放骨架屏数据)
 | minGrayBlockWidth | 否 | 0 | 最小处理灰色块的宽度 |
 | minGrayPseudoWidth | 否 | 0 | 最小处理伪类宽 |
 
@@ -127,8 +127,6 @@ $ npm run skeleton
 <div data-skeleton-empty><span>abc</span></div>
 ```
 
-## 本地开发
-
 ### 安装依赖
 
 ```bash
@@ -149,6 +147,181 @@ $ npm run dev
 ```bash
 $ cd demo
 $ node index.js
+```
+
+
+#### 高级玩法
+1. 基于node新建一个服务
+2. 在node服务中通过npm包的形式引用 `auto-skeleton`
+3. 开发一个接口接收请求到的url和options，在node服务中生成骨架屏
+4. 把骨架屏返回给调用接口的地方。调用方可以是基于express开发的中间件，结合自己的项目使用中间件把骨架屏返回给前端html模板。
+> 基于egg开发的骨架屏服务器，示例代码如下
+```jsx harmony
+'use strict';
+
+const Controller = require('egg').Controller;
+const getSkeleton = require('auto-skeleton');
+const initOptions = {
+  pageName: 'mySkeletonPage',
+  pageUrl: '',
+  openRepeatList: true,
+  device: 'iPhone X',
+  minGrayBlockWidth: 50,
+  minGrayPseudoWidth: 10,
+  writeFile: false,
+  debug: false,
+  debugTime: 100000,
+  cookies: [],
+};
+
+class SkeletonController extends Controller {
+  async getContentByUrl() {
+    try {
+      const { ctx } = this;
+      const { pageUrl, options } = ctx.request.body;
+      options.pageUrl = pageUrl;
+      const finalOptions = {
+        ...initOptions,
+        ...options,
+      };
+      const res = await getSkeleton(finalOptions);
+      ctx.body = {
+        code: '0',
+        content: {
+          ...res,
+          message: '骨架屏生成成功，感谢使用',
+        },
+      };
+    } catch (e) {
+      this.body = {
+        code: '500',
+        content: { message: '生成失败，请重试' },
+      };
+    }
+  }
+}
+
+module.exports = SkeletonController;
+
+```
+
+> 基于express开发的根据url请求骨架屏的中间件
+```jsx harmony
+const fs = require('fs');
+const path = require('path');
+const request = require('request');
+const skeletonConfig = require('../../../skeleton.config.json'); // 骨架屏配置项
+
+/**
+ * 递归创建目录
+ */
+const makeDirs = async (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    await fs.mkdirSync(dirPath);
+  }
+};
+
+/**
+ * 判断url是否有某个参数
+ * @param url
+ * @param string
+ * @returns {boolean}
+ */
+const hasQuery = (url, string) => {
+  return url.indexOf(string) > 0;
+};
+
+/**
+ * url转为文件名称：以m.productForMixin.list.html命名的html文件
+ * /m/productForMixin/list?userId=1173783329200144789 => m.productForMixin.list
+ * @param url
+ * @returns {string}
+ *
+ */
+const formatSlashToDot = (url) => {
+  return url
+    .split('/')
+    .slice(-3)
+    .join('.');
+};
+
+// 这是个express中间件
+export default function (app) {
+  app.use(async (req, res, next) => {
+    const { url, headers } = req;
+    // 如果url中有标记skeleton字段，表示是第二次打开链接，不再执行生成骨架屏逻辑
+    if (hasQuery(url, 'skeleton')) {
+      next();
+      return;
+    }
+    let pagePath = null;
+
+    // 根据是否有？处理参数
+    if (hasQuery(url, '?')) {
+      pagePath = formatSlashToDot(url.slice(0, url.indexOf('?')));
+    } else {
+      pagePath = formatSlashToDot(url);
+    }
+
+    const outputFile = skeletonConfig.outputFile || 'skeleton-output';
+    const folder = path.join(process.cwd(), outputFile);
+    try {
+      // 判断是否已生成了骨架屏html
+      await fs.readFile(
+        `${folder}/${pagePath}.html`,
+        'utf-8',
+        async (err, data) => {
+          // 已生成，读取骨架屏代码dom，塞入模板的html中
+          if (!err) {
+            res.locals.html = data;
+            next();
+          } else if (!hasQuery(url, 'null')) {
+            // 还没有生成骨架屏，去生成，先处理url
+            next();
+
+            let pageUrl = `${headers.host}${url}`;
+            if (!hasQuery(pageUrl, 'http')) {
+              pageUrl = `http://${pageUrl}`;
+            }
+            // url标记skeleton参数
+            pageUrl = hasQuery(pageUrl, '?')
+              ? `${pageUrl}&skeleton=skeleton`
+              : `${pageUrl}?skeleton=skeleton`;
+            const options = {
+              url: 'http://127.0.0.1:7001/skeleton/getContentByUrl',
+              method: 'POST',
+              json: true,
+              body: {
+                pageUrl,
+              },
+            };
+            // 通过 request 方法请求部署了生成骨架屏服务的 node服务，返回骨架屏
+            request(options, async (err2, result) => {
+              if (err2) {
+                return;
+              }
+
+              await makeDirs(folder);
+
+              const content = result.body.content.html;
+              fs.writeFileSync(
+                `${folder}/${pagePath}.html`,
+                content,
+                'utf8',
+                (err3) => {
+                  if (err3) return console.error(err3);
+                },
+              );
+            });
+          }
+        },
+      );
+    } catch (e) {
+      next();
+    }
+  });
+}
+
 ```
 
 - 参考： https://github.com/kaola-fed/awesome-skeleton

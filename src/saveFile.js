@@ -9,7 +9,11 @@ const saveScreenShot = async (page, options) => {
   const fileName = pageUrl.slice(0, pageUrl.indexOf('?')).split('/').slice(-3)
     .join('.');
 
-  const screenshotPath = path.join(options.outputPath, `${fileName}.png`);
+  // 不需要writeFile 时，直接生成文件
+  let screenshotPath = `${fileName}.png`;
+  if (options.writeFile) {
+    screenshotPath = path.join(options.outputPath, `${fileName}.png`);
+  }
 
   // 首屏截图
   await page.screenshot({
@@ -22,7 +26,7 @@ const saveScreenShot = async (page, options) => {
 
   const skeletonImageBase64 = base64Img.base64Sync(screenshotPath);
 
-  const skeletonBase64Path = options.outputPath ? path.join(options.outputPath, `${fileName}.txt`) : null;
+  const skeletonBase64Path = path.join(options.outputPath, `${fileName}.txt`);
   if (skeletonBase64Path) {
     if (options.writeFile) {
       // 把base64写入文件
