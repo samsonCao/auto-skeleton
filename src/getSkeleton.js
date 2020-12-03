@@ -31,12 +31,12 @@ const initOptions = {
   debugTime: 0,
   minGrayBlockWidth: 0,
   minGrayPseudoWidth: 0,
-}
+};
 const getSkeleton = async function(options) {
   options = {
     ...initOptions,
     ...options,
-  }
+  };
   // 检查页面地址是否为空
   if (!options.pageUrl) {
     console.warn('页面地址不能为空！');
