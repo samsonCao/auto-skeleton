@@ -54,17 +54,6 @@
       "eslint --fix"
     ]
   },
-  "nyc": {
-    "reporter": [
-      "lcov",
-      "text"
-    ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
   "bugs": {
     "url": "https://github.com/samsonCao/auto-skeleton/issues"
   },
