@@ -100,6 +100,7 @@ $ npm run skeleton
 | cookies | 否 |  | 页面 Cookies，用来解决登录态问题 |
 | writeFile | 否 | false | 是否写入文件(在当前引用骨架屏插件的文件生成一个文件夹，自动存放骨架屏数据)
 | outputPath | 否 | skeleton-output | 骨架图文件输出文件夹路径，默认到项目 skeleton-output 中 |
+| removeBodySkeletonClass | 否 | - | 生成骨架屏html时指定的body第一个child的class类名，用于删除骨架屏|
 | openRepeatList | 否 | true | 默认会将每个列表的第一项进行复制 |
 | device | 否 | iPhone X | 参考 puppeteer/DeviceDescriptors.js，可以设置为 'iPhone 6 Plus' |
 | debug | 否 | false | 是否开启调试开关 |
@@ -219,6 +220,7 @@ const makeDirs = async (dirPath) => {
   if (!fs.existsSync(dirPath)) {
     await fs.mkdirSync(dirPath);
   }
+  return Promise.resolve();
 };
 
 /**
@@ -245,6 +247,14 @@ const formatSlashToDot = (url) => {
     .join('.');
 };
 
+const formatStringHasQuery = (str) => {
+  // 根据是否有？处理参数
+  if (hasQuery(str, '?')) {
+    return formatSlashToDot(str.slice(0, str.indexOf('?')));
+  }
+  return formatSlashToDot(str);
+};
+
 // 这是个express中间件
 export default function (app) {
   app.use(async (req, res, next) => {
@@ -254,17 +264,10 @@ export default function (app) {
       next();
       return;
     }
-    let pagePath = null;
 
-    // 根据是否有？处理参数
-    if (hasQuery(url, '?')) {
-      pagePath = formatSlashToDot(url.slice(0, url.indexOf('?')));
-    } else {
-      pagePath = formatSlashToDot(url);
-    }
+    const pagePath = formatStringHasQuery(url);
 
-    const outputFile = skeletonConfig.outputFile || 'skeleton-output';
-    const folder = path.join(process.cwd(), outputFile);
+    const folder = path.join(process.cwd(), 'skeleton-output');
     try {
       // 判断是否已生成了骨架屏html
       await fs.readFile(
@@ -273,7 +276,7 @@ export default function (app) {
         async (err, data) => {
           // 已生成，读取骨架屏代码dom，塞入模板的html中
           if (!err) {
-            res.locals.html = data;
+            res.locals.skeleton = data;
             next();
           } else if (!hasQuery(url, 'null')) {
             // 还没有生成骨架屏，去生成，先处理url
@@ -293,25 +296,29 @@ export default function (app) {
               json: true,
               body: {
                 pageUrl,
+                skeletonConfig,
               },
             };
-            // 通过 request 方法请求部署了生成骨架屏服务的 node服务，返回骨架屏
             request(options, async (err2, result) => {
               if (err2) {
+                console.log(`options-request-error: ${err2}`);
                 return;
               }
-
-              await makeDirs(folder);
-
-              const content = result.body.content.html;
-              fs.writeFileSync(
-                `${folder}/${pagePath}.html`,
-                content,
-                'utf8',
-                (err3) => {
-                  if (err3) return console.error(err3);
-                },
-              );
+              const resData = result.body;
+              if (String(resData.code) === '0') {
+                await makeDirs(folder);
+                const content = result.body.content.html;
+                fs.writeFileSync(
+                  `${folder}/${pagePath}.html`,
+                  content,
+                  'utf8',
+                  (err3) => {
+                    if (err3) {
+                      console.error(`options-response-error: ${err3}`);
+                    }
+                  },
+                );
+              }
             });
           }
         },
@@ -321,6 +328,7 @@ export default function (app) {
     }
   });
 }
+
 
 ```
 

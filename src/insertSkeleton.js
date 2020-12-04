@@ -15,6 +15,8 @@ const insertSkeleton = (skeletonImageBase64, options) => {
     return false;
   }
 
+  const removeBodySkeletonClass = options.removeBodySkeletonClass;
+
   const skeletonClass = 'skeleton-remove-after-first-request';
 
   const content = `
@@ -59,20 +61,26 @@ const insertSkeleton = (skeletonImageBase64, options) => {
     <script class="${skeletonClass}">
       // Define hooks
       window.SKELETON = {
-        destroy: function () { // Manually destroy the skeleton
-          var removes = Array.from(document.body.querySelectorAll('.${skeletonClass}'));
-          removes && removes.map(function(item){
-            document.body.removeChild(item);
-          });
+        destroy: function () {
+          // 自定义需要删除的class类。
+          var removeBodySkeleton = Array.from(document.body.querySelectorAll('.${removeBodySkeletonClass}'));
+          if (removeBodySkeleton && removeBodySkeleton.length > 0) {
+            document.body.removeChild(removeBodySkeleton[0]);
+          } else {
+            var removes = Array.from(document.body.querySelectorAll('.${skeletonClass}'));
+            removes && removes.map(function(item){
+              document.body.removeChild(item);
+            });
+          }
         }
       };
 
       // destroy after the onload event by default
-      // window.addEventListener('load', function(){
-      //   setTimeout(function(){
-      //     window.SKELETON && SKELETON.destroy()
-      //   }, 0);
-      // });
+      window.addEventListener('load', function(){
+        setTimeout(function(){
+          window.SKELETON && SKELETON.destroy()
+        }, 0);
+      });
     </script>`;
 
   // 压缩css js 去掉注释
@@ -88,8 +96,6 @@ const insertSkeleton = (skeletonImageBase64, options) => {
       if (err) return console.error(err);
     });
   }
-
-  console.log('minifyContent');
 
   return {
     minHtml: minifyContent,
