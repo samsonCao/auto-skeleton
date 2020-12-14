@@ -1,7 +1,7 @@
 const getSkeleton = require('../src/index');
 
 getSkeleton({
-  pageUrl: 'https://test.baoyun18.com/m/promotion/product/center',
+  pageUrl: 'www.baidu.com',
   openRepeatList: true,
   device: 'iPhone X', // 为空则使用默认 PC 页面打开
   minGrayBlockWidth: 20,
