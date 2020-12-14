@@ -34,6 +34,14 @@ const saveScreenShot = async (page, options) => {
         if (err) throw err;
         console.log(`The base64-${options.pageName}.txt file has been saved in path '${options.outputPath}' !`);
       });
+    } else {
+      fs.unlink(screenshotPath, error => {
+        if (error) {
+          console.log(error);
+        }
+          console.log('unlink success');
+        }
+      );
     }
   }
   return skeletonImageBase64;

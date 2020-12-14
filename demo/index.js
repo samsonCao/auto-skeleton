@@ -1,26 +1,15 @@
 const getSkeleton = require('../src/index');
 
 getSkeleton({
-  pageUrl: 'https://www.baidu.com',
-  openRepeatList: false,
+  pageUrl: 'https://test.baoyun18.com/m/promotion/product/center',
+  openRepeatList: true,
   device: 'iPhone X', // 为空则使用默认 PC 页面打开
   minGrayBlockWidth: 20,
   minGrayPseudoWidth: 5,
   debug: true,
-  debugTime: 1000,
+  debugTime: 5000000,
   cookies: [{
-    "domain": ".baidu.com",
-    "expirationDate": 1568267131.555328,
-    "hostOnly": false,
-    "httpOnly": false,
-    "name": "BDORZ",
-    "path": "/",
-    "sameSite": "unspecified",
-    "secure": false,
-    "session": false,
-    "storeId": "0",
-    "value": "yyyyyyyyy",
-    "id": 2
+    "JSESSIONID": "B87DF57057D0645CC0F747C8A0302B0F",
   }],
 }).then(result => {
   // console.log(result.html)

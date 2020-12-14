@@ -331,11 +331,17 @@
   function textHandler(ele, options) {
     const {
       width,
+      height,
     } = ele.getBoundingClientRect();
 
     // 宽度小于预设的最小块宽度时直接设置为透明
-    const minGrayBlockWidth = options.minGrayBlockWidth || 30;
+    const minGrayBlockWidth = options.minGrayBlockWidth || 5;
     if (width <= minGrayBlockWidth) {
+      return setOpacity(ele);
+    }
+
+    const minGrayBlockHeight = options.minGrayBlockHeight || 3;
+    if (height <= minGrayBlockHeight) {
       return setOpacity(ele);
     }
 
@@ -483,8 +489,11 @@
     }
 
     // 小于最小块儿预设宽度时，设置为透明
-    const { width } = node.getBoundingClientRect();
+    const { width, height } = node.getBoundingClientRect();
     if (width < options.minGrayBlockWidth) {
+      setOpacity(node);
+    }
+    if (height < options.minGrayBlockHeight) {
       setOpacity(node);
     }
 
@@ -615,7 +624,8 @@
       }
 
       // 处理文本和dom嵌套的节点 <span>111<a>222</a></span> <span>111<img src="xx" /></span>
-      if (tagName === 'SPAN' && node.innerHTML) {
+      // nodeType必须是文本节点才结束，否则会继续遍历
+      if (tagName === 'SPAN' && node.innerHTML && node.nodeType === 3) {
         // 先处理图片和背景图
         this.handleImages(node.childNodes);
 

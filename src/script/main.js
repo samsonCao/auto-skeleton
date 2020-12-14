@@ -110,7 +110,8 @@ window.AutoSkeleton = {
     }
 
     // 处理文本和dom嵌套的节点 <span>111<a>222</a></span> <span>111<img src="xx" /></span>
-    if (tagName === 'SPAN' && node.innerHTML) {
+    // nodeType必须是文本节点才结束，否则会继续遍历
+    if (tagName === 'SPAN' && node.innerHTML && node.nodeType === 3) {
       // 先处理图片和背景图
       this.handleImages(node.childNodes);
 

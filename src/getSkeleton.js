@@ -5,6 +5,8 @@ const { saveScreenShot } = require('./saveFile');
 const openPage = require('./openPage');
 const insertSkeleton = require('./insertSkeleton');
 const saveAllHtml = require('./saveAllHtml');
+const sleeps = require('./util');
+const sleep = sleeps.sleep;
 
 /**
  * 入口  配置文件
@@ -15,6 +17,7 @@ const saveAllHtml = require('./saveAllHtml');
  * @param {Boolean} options.openRepeatList 默认会将每个列表的第一项进行复制
  * @param {Object} options.device 设备尺寸
  * @param {Number} options.minGrayBlockWidth 最小处理灰色块的宽度
+ * @param {Number} options.minGrayBlockHeight 最小处理灰色块的高度，例如1px的带背景色下横线，直接去掉
  * @param {Number} options.minGrayPseudoWidth 最小处理伪类宽
  * @param {Boolean} options.debug 是否开启调试开关
  * @param {Number} options.debugTime 调试模式下，页面停留在骨架图的时间
@@ -25,11 +28,12 @@ const initOptions = {
   pageName: 'output',
   writeFile: false,
   outputPath: 'skeleton-output',
-  openRepeatList: false,
+  openRepeatList: true,
   device: 'iPhone X',
   debug: false,
   debugTime: 0,
-  minGrayBlockWidth: 0,
+  minGrayBlockWidth: 5,
+  minGrayBlockHeight: 3,
   minGrayPseudoWidth: 0,
 };
 const getSkeleton = async function(options) {
@@ -54,8 +58,8 @@ const getSkeleton = async function(options) {
   const { page, browser } = await openPage(options);
 
   // 开始生成骨架屏
-  await page.evaluate(options => {
-    window.AutoSkeleton.genSkeleton(options);
+  await page.evaluate(async options => {
+    await window.AutoSkeleton.genSkeleton(options);
   }, options);
 
   // 截图

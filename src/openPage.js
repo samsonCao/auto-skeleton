@@ -20,6 +20,7 @@ const openPage = async options => {
     headless: !options.debug,
     args: [ '--no-sandbox', '--disable-setuid-sandbox' ],
   });
+  // const page = (await browser.pages())[0];
   const page = await browser.newPage();
   const device = devices[options.device] || desktopDevice;
   await page.emulate(device);

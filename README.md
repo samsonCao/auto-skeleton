@@ -256,78 +256,97 @@ const formatStringHasQuery = (str) => {
 };
 
 // 这是个express中间件
-export default function (app) {
-  app.use(async (req, res, next) => {
-    const { url, headers } = req;
-    // 如果url中有标记skeleton字段，表示是第二次打开链接，不再执行生成骨架屏逻辑
-    if (hasQuery(url, 'skeleton')) {
+export default async (req, res, next) => {
+  res.locals.skeleton = '';
+  const { url, headers } = req;
+  // 如果url中有标记skeleton字段，表示是从生成骨架屏打开的链接，阻止循环调用
+  if (hasQuery(url, 'skeleton')) {
+    next();
+    return;
+  }
+ 
+  const pagePath = formatStringHasQuery(url);
+ 
+  const folder = path.join(process.cwd(), 'skeleton-output');
+ 
+  const createSkeletonFunc = () => {
+    let pageUrl = `${headers.host}${url}`;
+    // 这里还需要再斟酌一下。看是否需要这个判断，判读是否合理。
+    if (!hasQuery(pageUrl, 'http')) {
+      pageUrl = `http://${pageUrl}`;
+    }
+    // url标记skeleton参数
+    pageUrl = hasQuery(pageUrl, '?')
+      ? `${pageUrl}&skeleton=skeleton`
+      : `${pageUrl}?skeleton=skeleton`;
+    const options = {
+      url: 'http://127.0.0.1:7001/skeleton/getContentByUrl',
+      method: 'POST',
+      json: true,
+      body: {
+        pageUrl,
+        options: {
+          removeBodySkeletonClass: 'remove-body-skeleton',
+        },
+      },
+    };
+    request(options, async (err2, result) => {
+      if (err2) {
+        console.log(`options-request-error: ${err2}`);
+        return;
+      }
+      const resData = result.body;
+      if (String(resData.code) === '0') {
+        await makeDirs(folder);
+        const content = result.body.content.html;
+        fs.writeFileSync(
+          `${folder}/${pagePath}.html`,
+          content,
+          'utf8',
+          (err3) => {
+            if (err3) {
+              console.error(`options-response-error: ${err3}`);
+            }
+          },
+        );
+      }
+    });
+  };
+ 
+  try {
+    /**
+     * 如果链接有参数 createSkeletonAgain，再生成一次，覆盖之前的。
+     * 如果用户自动生成的不合适，开发者可以手动输入链接，再生成一次
+     */
+    if (hasQuery(url, 'createSkeletonAgain')) {
       next();
+      createSkeletonFunc();
       return;
     }
-
-    const pagePath = formatStringHasQuery(url);
-
-    const folder = path.join(process.cwd(), 'skeleton-output');
-    try {
-      // 判断是否已生成了骨架屏html
-      await fs.readFile(
-        `${folder}/${pagePath}.html`,
-        'utf-8',
-        async (err, data) => {
-          // 已生成，读取骨架屏代码dom，塞入模板的html中
-          if (!err) {
-            res.locals.skeleton = data;
-            next();
-          } else if (!hasQuery(url, 'null')) {
-            // 还没有生成骨架屏，去生成，先处理url
-            next();
-
-            let pageUrl = `${headers.host}${url}`;
-            if (!hasQuery(pageUrl, 'http')) {
-              pageUrl = `http://${pageUrl}`;
-            }
-            // url标记skeleton参数
-            pageUrl = hasQuery(pageUrl, '?')
-              ? `${pageUrl}&skeleton=skeleton`
-              : `${pageUrl}?skeleton=skeleton`;
-            const options = {
-              url: 'http://127.0.0.1:7001/skeleton/getContentByUrl',
-              method: 'POST',
-              json: true,
-              body: {
-                pageUrl,
-                skeletonConfig,
-              },
-            };
-            request(options, async (err2, result) => {
-              if (err2) {
-                console.log(`options-request-error: ${err2}`);
-                return;
-              }
-              const resData = result.body;
-              if (String(resData.code) === '0') {
-                await makeDirs(folder);
-                const content = result.body.content.html;
-                fs.writeFileSync(
-                  `${folder}/${pagePath}.html`,
-                  content,
-                  'utf8',
-                  (err3) => {
-                    if (err3) {
-                      console.error(`options-response-error: ${err3}`);
-                    }
-                  },
-                );
-              }
-            });
-          }
-        },
-      );
-    } catch (e) {
-      next();
-    }
-  });
-}
+    // 判断是否已生成了骨架屏html
+    await fs.readFile(
+      `${folder}/${pagePath}.html`,
+      'utf-8',
+      async (err, data) => {
+        // 已生成，读取骨架屏代码dom，塞入模板的html中
+        if (!err) {
+          // 会在res.render注入
+          res.locals.skeleton = data;
+          next();
+        } else if (!hasQuery(url, 'null')) {
+          // 重定向304或者爬虫robot会出现null。
+          next();
+          createSkeletonFunc();
+        } else {
+          // 会在res.render注入
+          next();
+        }
+      },
+    );
+  } catch (e) {
+    next();
+  }
+};
 
 
 ```

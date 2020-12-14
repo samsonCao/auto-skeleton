@@ -19,8 +19,11 @@ function beforeHandler(node, options) {
   }
 
   // 小于最小块儿预设宽度时，设置为透明
-  const { width } = node.getBoundingClientRect();
+  const { width, height } = node.getBoundingClientRect();
   if (width < options.minGrayBlockWidth) {
+    setOpacity(node);
+  }
+  if (height < options.minGrayBlockHeight) {
     setOpacity(node);
   }
 

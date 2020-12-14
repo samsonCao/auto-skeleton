@@ -191,11 +191,17 @@ function handleTextStyle(ele, width) {
 function textHandler(ele, options) {
   const {
     width,
+    height,
   } = ele.getBoundingClientRect();
 
   // 宽度小于预设的最小块宽度时直接设置为透明
-  const minGrayBlockWidth = options.minGrayBlockWidth || 30;
+  const minGrayBlockWidth = options.minGrayBlockWidth || 5;
   if (width <= minGrayBlockWidth) {
+    return setOpacity(ele);
+  }
+
+  const minGrayBlockHeight = options.minGrayBlockHeight || 3;
+  if (height <= minGrayBlockHeight) {
     return setOpacity(ele);
   }
 
