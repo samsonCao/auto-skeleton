@@ -1,3 +1,7 @@
+# [1.3.0](https://github.com/samsonCao/auto-skeleton/compare/v1.2.3...v1.3.0) (2020-12-14)
+
+
+
 ## [1.2.3](https://github.com/samsonCao/auto-skeleton/compare/v1.2.2...v1.2.3) (2020-12-14)
 
 
