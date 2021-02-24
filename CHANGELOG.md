@@ -1,3 +1,7 @@
+## [1.4.2](https://github.com/samsonCao/auto-skeleton/compare/v1.4.0...v1.4.2) (2021-02-24)
+
+
+
 # [1.4.0](https://github.com/samsonCao/auto-skeleton/compare/v1.3.2...v1.4.0) (2021-02-24)
 
 
