@@ -1,5 +1,4 @@
 const puppeteer = require('puppeteer');
-const devices = require('puppeteer/DeviceDescriptors');
 const {
   sleep,
   genScriptContent,
@@ -21,9 +20,9 @@ const openPage = async options => {
     args: [ '--no-sandbox', '--disable-setuid-sandbox' ],
   });
   // const page = (await browser.pages())[0];
+  const device = options.device || desktopDevice;
   const page = await browser.newPage();
-  const device = devices[options.device] || desktopDevice;
-  await page.emulate(device);
+  await page.emulate(puppeteer.devices[device]);
 
   if (options.debug) {
     page.on('console', msg => console.log('PAGE LOG: ', msg.text()));
@@ -33,7 +32,14 @@ const openPage = async options => {
 
   // 设置cookie解决登录问题
   if (options.cookies && options.cookies.length) {
-    await page.setCookie(...options.cookies);
+    const allCookise = options.cookies.map(item => {
+      const enhanceCookie = { ...item };
+      if (!enhanceCookie.url) {
+        enhanceCookie.url = options.pageUrl;
+      }
+      return enhanceCookie;
+    });
+    await page.setCookie(...allCookise);
     await page.cookies(options.pageUrl);
     await sleep(1000);
   }
