@@ -1,8 +1,15 @@
 {
   "name": "auto-skeleton",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "骨架图生成器",
-  "author": "",
+  "keywords": [
+    "puppeteer",
+    "chrome",
+    "skeleton",
+    "headless",
+    "plugin"
+  ],
+  "author": "samcao",
   "main": "src/index.js",
   "bin": {
     "skeleton": "bin/skeleton.js"

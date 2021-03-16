@@ -181,8 +181,10 @@ function handleTextStyle(ele, width) {
       case 'right':
         ele.style.backgroundPositionX = '100%';
         break;
-      default: // center
+      case 'center':
         ele.style.backgroundPositionX = '50%';
+        break;
+      default:
         break;
     }
   }
