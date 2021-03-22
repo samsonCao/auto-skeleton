@@ -9,8 +9,8 @@ const insertSkeleton = (skeletonImageBase64, options) => {
   const { pageUrl } = options;
   let { xhrTypeList } = options;
   if (!xhrTypeList) {
-    xhrTypeList = ['xhr', 'fetch', 'xmlhttprequest']
-  };
+    xhrTypeList = [ 'xhr', 'fetch', 'xmlhttprequest' ];
+  }
   const fileName = pageUrl.slice(0, pageUrl.indexOf('?')).split('/').slice(-3)
     .join('.');
 
