@@ -7,6 +7,10 @@ const insertSkeleton = (skeletonImageBase64, options) => {
   // 把内容写入硬盘
   const autoHTMLPath = path.join(process.cwd(), options.outputPath);
   const { pageUrl } = options;
+  let { xhrTypeList } = options;
+  if (!xhrTypeList) {
+    xhrTypeList = ['xhr', 'fetch', 'xmlhttprequest']
+  };
   const fileName = pageUrl.slice(0, pageUrl.indexOf('?')).split('/').slice(-3)
     .join('.');
 
@@ -74,13 +78,54 @@ const insertSkeleton = (skeletonImageBase64, options) => {
           }
         }
       };
+      
+      var loopStatus = true;
+      var initiatorTypeList = ['xhr', 'fetch', 'xmlhttprequest'];
+      function destroyOnLoad(time) {
+        window.addEventListener("load", function () {
+          setTimeout(function () {
+            loopStatus = false;
+            window.SKELETON && SKELETON.destroy();
+          }, time);
+        });
+      }
+      function hasSameType(list, valueToFind) {
+        var len = list.length >>> 0;
+        var len = list.length >>> 0;
+        if (len === 0) return false;
+        function sameValueZero(x, y) {
+            return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+        }
+        var k = 0;
 
-      // destroy after the onload event by default
-      window.addEventListener('load', function(){
-        setTimeout(function(){
-          window.SKELETON && SKELETON.destroy()
-        }, 0);
-      });
+        while (k < len) {
+          if (sameValueZero(list[k], valueToFind)) {
+            return true;
+          }
+          k++;
+        }
+        return false;
+      }
+      function destroyLoop() {
+        if (loopStatus) {
+          var entries = window.performance.getEntries();
+          for (let i = 0; i < entries.length; i++) {
+            if (hasSameType(initiatorTypeList, entries[i].initiatorType)) {
+              loopStatus = false;
+              window.SKELETON && SKELETON.destroy();
+            }
+          }
+          window.requestAnimationFrame(destroyLoop);
+        }
+      }
+      if (window.requestAnimationFrame && window.performance) {
+        // 有ajax时，在循环中判断是否有ajax请求返回，有的话直接显示内容
+        window.requestAnimationFrame(destroyLoop);
+      } else {
+        destroyOnLoad(0);
+      }
+      // 如果接口没有ajax,直接在onload后清空
+      destroyOnLoad(0);
     </script>`;
 
   // 压缩css js 去掉注释

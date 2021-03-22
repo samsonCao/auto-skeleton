@@ -5,8 +5,6 @@ const { saveScreenShot } = require('./saveFile');
 const openPage = require('./openPage');
 const insertSkeleton = require('./insertSkeleton');
 const saveAllHtml = require('./saveAllHtml');
-const sleeps = require('./util');
-const sleep = sleeps.sleep;
 
 /**
  * 入口  配置文件
