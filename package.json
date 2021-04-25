@@ -21,8 +21,7 @@
     "test": "nyc mocha",
     "ci": "npm run lint && npm run test",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add .",
-    "contributor": "git-contributor",
-    "prepublishOnly": "np --yolo --no-publish"
+    "contributor": "git-contributor"
   },
   "dependencies": {
     "base64-img": "^1.0.4",
