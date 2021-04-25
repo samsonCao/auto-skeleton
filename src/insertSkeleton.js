@@ -78,54 +78,104 @@ const insertSkeleton = (skeletonImageBase64, options) => {
           }
         }
       };
-      
-      var loopStatus = true;
-      var initiatorTypeList = ['xhr', 'fetch', 'xmlhttprequest'];
-      function destroyOnLoad(time) {
-        window.addEventListener("load", function () {
-          setTimeout(function () {
-            loopStatus = false;
-            window.SKELETON && SKELETON.destroy();
-          }, time);
-        });
-      }
-      function hasSameType(list, valueToFind) {
-        var len = list.length >>> 0;
-        var len = list.length >>> 0;
-        if (len === 0) return false;
-        function sameValueZero(x, y) {
-            return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
-        }
-        var k = 0;
 
-        while (k < len) {
-          if (sameValueZero(list[k], valueToFind)) {
-            return true;
-          }
-          k++;
-        }
-        return false;
-      }
-      function destroyLoop() {
-        if (loopStatus) {
-          var entries = window.performance.getEntries();
-          for (let i = 0; i < entries.length; i++) {
-            if (hasSameType(initiatorTypeList, entries[i].initiatorType)) {
-              loopStatus = false;
+      function hook(proxy) {
+        var realXhr = "_rxhr";
+        window[realXhr] = window[realXhr] || XMLHttpRequest;
+        XMLHttpRequest = function () {
+          var xhr = new window[realXhr]();
+          for (var attr in xhr) {
+            var type = "";
+            try {
+              type = typeof xhr[attr];
+            } catch (e) {
               window.SKELETON && SKELETON.destroy();
             }
+            if (type === "function") {
+              this[attr] = hookFunction(attr);
+            } else {
+              Object.defineProperty(this, attr, {
+                get: getterFactory(attr),
+                set: setterFactory(attr),
+                enumerable: true
+              });
+            }
           }
-          window.requestAnimationFrame(destroyLoop);
+          this.xhr = xhr;
+        };
+    
+        function configEvent(event, xhrProxy) {
+          var e = {};
+          for (var attr in event) e[attr] = event[attr];
+          e.target = e.currentTarget = xhrProxy;
+          return e;
         }
+    
+        function getterFactory(attr) {
+          return function () {
+            var v = this.hasOwnProperty(attr + "_") ? this[attr + "_"] : this.xhr[attr];
+            var attrGetterHook = (proxy[attr] || {})["getter"];
+            return (attrGetterHook && attrGetterHook(v, this)) || v;
+          };
+        }
+    
+        function setterFactory(attr) {
+          return function (v) {
+            var xhr = this.xhr;
+            var that = this;
+            var hook = proxy[attr];
+            if (attr.substring(0, 2) === "on") {
+              that[attr + "_"] = v;
+              xhr[attr] = function (e) {
+                e = configEvent(e, that);
+                var ret = proxy[attr] && proxy[attr].call(that, xhr, e);
+                ret || v.call(that, e);
+              };
+            } else {
+              var attrSetterHook = (hook || {})["setter"];
+              v = (attrSetterHook && attrSetterHook(v, that)) || v;
+              this[attr + "_"] = v;
+              try {
+                xhr[attr] = v;
+              } catch (e) {}
+            }
+          };
+        }
+    
+        function hookFunction(fun) {
+          return function () {
+            var args = [].slice.call(arguments);
+            if (proxy[fun]) {
+              var ret = proxy[fun].call(this, args, this.xhr);
+              if (ret) return ret;
+            }
+            return this.xhr[fun].apply(this.xhr, args);
+          };
+        }
+    
+        return window[realXhr];
       }
-      if (window.requestAnimationFrame && window.performance) {
-        // 有ajax时，在循环中判断是否有ajax请求返回，有的话直接显示内容
-        window.requestAnimationFrame(destroyLoop);
-      } else {
-        destroyOnLoad(0);
-      }
-      // 如果接口没有ajax,直接在onload后清空
-      destroyOnLoad(0);
+
+      hook({
+        //拦截回调
+        onreadystatechange: function (xhr, event) {
+          console.log(xhr.readyState);
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            window.SKELETON && SKELETON.destroy();
+          }
+          //返回false表示不阻断，拦截函数执行完后会接着执行真正的xhr.onreadystatechange回调.
+          return false;
+        },
+        onload: function (xhr, event) {
+          window.SKELETON && SKELETON.destroy();
+          return false;
+        }
+      });
+    
+      // 如果页面中没有ajax，在onload中关闭骨架屏
+      window.addEventListener("load", function () {
+        window.SKELETON && SKELETON.destroy();
+      });
     </script>`;
 
   // 压缩css js 去掉注释
