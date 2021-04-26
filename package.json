@@ -1,6 +1,6 @@
 {
   "name": "auto-skeleton",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "description": "骨架图生成器",
   "keywords": [
     "puppeteer",

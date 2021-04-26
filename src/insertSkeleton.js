@@ -9,7 +9,7 @@ const insertSkeleton = (skeletonImageBase64, options) => {
   const { pageUrl } = options;
   let { xhrTypeList } = options;
   if (!xhrTypeList) {
-    xhrTypeList = [ 'xhr', 'fetch', 'xmlhttprequest' ];
+    xhrTypeList = ['xhr', 'fetch', 'xmlhttprequest'];
   }
   const fileName = pageUrl.slice(0, pageUrl.indexOf('?')).split('/').slice(-3)
     .join('.');
@@ -79,9 +79,10 @@ const insertSkeleton = (skeletonImageBase64, options) => {
         }
       };
 
+      var realXhr = "_rxhr";
+      window[realXhr] = window[realXhr] || XMLHttpRequest;
+
       function hook(proxy) {
-        var realXhr = "_rxhr";
-        window[realXhr] = window[realXhr] || XMLHttpRequest;
         XMLHttpRequest = function () {
           var xhr = new window[realXhr]();
           for (var attr in xhr) {
@@ -152,6 +153,12 @@ const insertSkeleton = (skeletonImageBase64, options) => {
             return this.xhr[fun].apply(this.xhr, args);
           };
         }
+
+        // 清除接口拦截
+        hook.unHook = function () {
+          if (window[realXhr]) XMLHttpRequest = window[realXhr];
+          window[realXhr] = undefined;
+        };
     
         return window[realXhr];
       }
@@ -162,12 +169,14 @@ const insertSkeleton = (skeletonImageBase64, options) => {
           console.log(xhr.readyState);
           if (xhr.readyState === 4 && xhr.status === 200) {
             window.SKELETON && SKELETON.destroy();
+            hook.unHook();
           }
           //返回false表示不阻断，拦截函数执行完后会接着执行真正的xhr.onreadystatechange回调.
           return false;
         },
         onload: function (xhr, event) {
           window.SKELETON && SKELETON.destroy();
+          hook.unHook();
           return false;
         }
       });
@@ -175,6 +184,7 @@ const insertSkeleton = (skeletonImageBase64, options) => {
       // 如果页面中没有ajax，在onload中关闭骨架屏
       window.addEventListener("load", function () {
         window.SKELETON && SKELETON.destroy();
+        hook.unHook();
       });
     </script>`;
 
